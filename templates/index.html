@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Pronunciation Intelligibility Remediation</title>
+  </head>
+  <body>
+    <h2>Pronunciation Intelligibility Remediation</h2>
+    <ul>
+      <li>Press "Start" and speak</li>
+    </ul>
+    <div style="float: right;">
+      <h2>Status <img id="load_symbol" href="{{ url_for('static', filename='img/ajax-loader.gif') }}"></h2>
+      <div id="current-status">Loading page</div>
+    </div>
+    <select id="grammars"></select>
+    <button id="startBtn">Start</button>
+    <button id="stopBtn">Stop</button>
+    <span id="recording-indicator" style="border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; width: 20px; height: 20px; background: red;"></span>
+    <h2>Recognition Output</h2>
+    <div id="output" >
+    </div>
+
+    
+
+    <script type="text/javascript">
+      // These will be initialized later
+      var recognizer, recognizer1, recognizer2, recorder, callbackManager, audioContext, outputContainer;
+      // Only when both recorder and recognizer do we have a ready application
+      var isRecorderReady = isRecognizerReady = false;
+
+      // A convenience function to post a message to the recognizer and associate
+      // a callback to its response
+      function postRecognizerJob(message, callback) {
+        var msg = message || {};
+        if (callbackManager) msg.callbackId = callbackManager.add(callback);
+        if (recognizer) recognizer.postMessage(msg);
+      };
+
+      // This function initializes an instance of the recorder
+      // it posts a message right away and calls onReady when it
+      // is ready so that onmessage can be properly set
+      function spawnWorker(workerURL, onReady) {
+          recognizer = new Worker(workerURL);
+          recognizer.onmessage = function(event) {
+            onReady(recognizer);
+          };
+          recognizer.postMessage('');
+      };
+
+      // To display the hypothesis sent by the recognizer
+      function updateHyp(hyp) {
+        if (outputContainer) outputContainer.innerHTML = hyp;
+      };
+
+      // This updates the UI when the app might get ready
+      // Only when both recorder and recognizer are ready do we enable the buttons
+      function updateUI() {
+        if (isRecorderReady && isRecognizerReady) startBtn.disabled = stopBtn.disabled = false;
+      };
+
+      // This is just a logging window where we display the status
+      function updateStatus(newStatus) {
+        document.getElementById('current-status').innerHTML += "<br/>" + newStatus;
+      };
+
+      // A not-so-great recording indicator
+      function displayRecording(display) {
+        if (display) document.getElementById('recording-indicator').innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+        else document.getElementById('recording-indicator').innerHTML = "";
+      };
+
+      // Callback function once the user authorises access to the microphone
+      // in it, we instanciate the recorder
+      function startUserMedia(stream) {
+        var input = audioContext.createMediaStreamSource(stream);
+        // Firefox hack https://support.mozilla.org/en-US/questions/984179
+        window.firefox_audio_hack = input; 
+        var audioRecorderConfig = {errorCallback: function(x) {updateStatus("Error from recorder: " + x);}};
+        recorder = new AudioRecorder(input, audioRecorderConfig);
+        // If a recognizer is ready, we pass it to the recorder
+        if (recognizer) recorder.consumers = [recognizer];
+        isRecorderReady = true;
+        updateUI();
+        updateStatus("Audio recorder ready");
+      };
+
+      // This starts recording. We first need to get the id of the grammar to use
+      var startRecording = function() {
+        var id = document.getElementById('grammars').value;
+        if (recorder && recorder.start(id)) displayRecording(true);
+      };
+
+      // Stops recording
+      var stopRecording = function() {
+        recorder && recorder.stop();
+        displayRecording(false);
+      };
+
+      // Called once the recognizer is ready
+      // We then add the grammars to the input select tag and update the UI
+      var recognizerReady = function() {
+           updateGrammars();
+           isRecognizerReady = true;
+           updateUI();
+           updateStatus("Recognizer ready");
+      };
+
+      // We get the grammars defined below and fill in the input select tag
+      var updateGrammars = function() {
+        var selectTag = document.getElementById('grammars');
+        for (var i = 0 ; i < grammarIds.length ; i++) {
+            var newElt = document.createElement('option');
+            newElt.value=grammarIds[i].id;
+            newElt.innerHTML = grammarIds[i].title;
+            selectTag.appendChild(newElt);
+        }                          
+      };
+
+      // This adds a grammar from the grammars array
+      // We add them one by one and call it again as
+      // a callback.
+      // Once we are done adding all grammars, we can call
+      // recognizerReady()
+      var feedGrammar = function(g, index, id) {
+        if (id && (grammarIds.length > 0)) grammarIds[0].id = id.id;
+        if (index < g.length) {
+          grammarIds.unshift({title: g[index].title})
+	  postRecognizerJob({command: 'addGrammar', data: g[index].g},
+                             function(id) {feedGrammar(grammars, index + 1, {id:id});});
+        } else {
+          recognizerReady();
+        }
+      };
+
+      // This adds words to the recognizer. When it calls back, we add grammars
+      var feedWords = function(words) {
+           postRecognizerJob({command: 'addWords', data: words},
+                        function() {feedGrammar(grammars, 0);});
+      };
+
+      // This initializes the recognizer. When it calls back, we add words
+      var initRecognizer = function() {
+          // You can pass parameters to the recognizer, such as : {command: 'initialize', data: [["-hmm", "my_model"], ["-fwdflat", "no"]]}
+          postRecognizerJob({command: 'initialize'},
+                            function() {
+                                        if (recorder) recorder.consumers = [recognizer];
+                                        feedWords(wordList);});
+      };
+
+      // When the page is loaded, we spawn a new recognizer worker and call getUserMedia to
+      // request access to the microphone
+      window.onload = function() {
+        outputContainer = document.getElementById("output");
+        //document.getElementById("load_symbol").style.display = "visible";
+        updateStatus("Initializing web audio and speech recognizer, waiting for approval to access the microphone");
+        callbackManager = new CallbackManager();
+        spawnWorker("{{ url_for('static', filename='js/recognizer.js') }}", function(worker) {
+            // This is the onmessage function, once the worker is fully loaded
+            worker.onmessage = function(e) {
+                // This is the case when we have a callback id to be called
+                if (e.data.hasOwnProperty('id')) {
+                  var clb = callbackManager.get(e.data['id']);
+                  var data = {};
+                  if ( e.data.hasOwnProperty('data')) data = e.data.data;
+                  if(clb) clb(data);
+                }
+                // This is a case when the recognizer has a new hypothesis
+                if (e.data.hasOwnProperty('hyp')) {
+                  var newHyp = e.data.hyp;
+                  if (e.data.hasOwnProperty('final') &&  e.data.final) {
+                    newHyp = "Final: " + newHyp;
+
+                    // Calculate mean
+                    var mean = 0.0;
+                    var hypseg = e.data.hypseg;
+                    var cnt = 0;
+                    for (var i = 0; i < hypseg.length; i++) {
+                      if (hypseg[i].word != "sil") {
+                        cnt++;
+                        mean += hypseg[i].ascr;
+                      }
+                    }
+                    mean /= cnt;
+
+                    // Calculate std deviation
+                    cnt = 0;
+                    var std = 0;
+                    for (var i = 0; i < hypseg.length; i++) {
+                      if (hypseg[i].word != "sil") {
+                        cnt++;
+                        var diff = (hypseg[i].ascr - mean)
+                        std += (diff * diff);
+                      }
+                    }
+                    std /= cnt;
+
+                    std = Math.sqrt(std);
+
+                    console.log("Mean = " + mean);
+                    console.log("Std = " + std);
+
+                    var table_str = "<table border='1'><tr><td>Word</td><td>Normalized score</td><td>Duration</td></tr>";
+                    for (var i = 0; i < hypseg.length; i++) {
+                      if (hypseg[i].word != "sil") {
+                        var score = (hypseg[i].ascr - mean) / std;
+                        table_str += "<tr><td>" + hypseg[i].word + "</td><td>" + score + "</td><td>" + ((hypseg[i].end - hypseg[i].start)/100.0) + "</td></tr>";
+                        console.log("Word = " + hypseg[i].word + " : Score = " + score + " : Duration = " + (hypseg[i].end - hypseg[i].start)/100.0);
+                      }
+                    }
+                    table_str += "</table>";
+
+                    updateHyp(newHyp + "<br>" + table_str + "<br>");
+
+                  } else {
+                    updateHyp(newHyp);
+                  }
+                  console.log(e.data);
+                  
+                }
+                // This is the case when we have an error
+                if (e.data.hasOwnProperty('status') && (e.data.status == "error")) {
+                  updateStatus("Error in " + e.data.command + " with code " + e.data.code);
+                }
+            };
+            // Once the worker is fully loaded, we can call the initialize function
+            initRecognizer();
+        });
+
+        // The following is to initialize Web Audio
+        try {
+          window.AudioContext = window.AudioContext || window.webkitAudioContext;
+          navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+          window.URL = window.URL || window.webkitURL;
+          audioContext = new AudioContext();
+        } catch (e) {
+          updateStatus("Error initializing Web Audio browser");
+        }
+        if (navigator.getUserMedia) navigator.getUserMedia({audio: true}, startUserMedia, function(e) {
+                                        updateStatus("No live audio input in this browser");
+                                    });
+        else updateStatus("No web audio support in this browser");
+
+      // Wiring JavaScript to the UI
+      var startBtn = document.getElementById('startBtn');
+      var stopBtn = document.getElementById('stopBtn');
+      startBtn.disabled = true;
+      stopBtn.disabled = true;
+      startBtn.onclick = startRecording;
+      stopBtn.onclick = stopRecording;
+      };
+
+       // This is the list of words that need to be added to the recognizer
+       // This follows the CMU dictionary format
+      var wordList = [
+                  ["whats", "W AH T S"], 
+                  ["your", "Y UH R"], 
+                  ["name", "N EY M"], 
+                  ["sil", "SIL"],
+                  ["w", "W"],
+                  ["ah", "AH"],
+                  ["t", "T"],
+                  ["s", "S"],
+                  ["y", "Y"],
+                  ["uh", "UH"],
+                  ["r", "R"],
+                  ["n", "N"],
+                  ["ey", "EY"],
+                  ["m", "M"],
+                  ["l", "L"],
+                  ["ae", "AE"],
+                  ["er", "ER"],
+                  ["aa", "AA"],
+                  ["ch", "CH"],
+                  ["k", "K"],
+                  ["d", "D"],
+                  ["p", "P"],
+                  ["hh", "HH"],
+                  ["sh", "SH"],
+                  ["z", "Z"],
+                  ["th", "TH"],
+                  ["ao", "AO"],
+                  ["uw", "UW"],
+                  ["ng", "NG"],
+                  ["eh", "EH"],
+                  ["iy", "IY"],
+                  ["ay", "AY"]
+                  ];
+      
+      var grammarWords = {
+                  numStates: 6, 
+                  start: 0, 
+                  end: 5, 
+                  transitions: [
+                    {from: 0, to: 1, word: "sil"}, 
+                    {from: 1, to: 2, word: "whats"}, 
+                    {from: 2, to: 3, word: "your"}, 
+                    {from: 3, to: 4, word: "name"}, 
+                    {from: 4, to: 5, word: "sil"}, 
+                    {from: 4, to: 5, word: ""}
+                    ]
+                  };
+
+      var grammarAlign = {
+                  numStates: 13, 
+                  start: 0, 
+                  end: 12, 
+                  transitions: [
+                    {from: 0, to: 1, word: "sil"}, 
+                    {from: 1, to: 2, word: "w"}, 
+                    {from: 2, to: 3, word: "ah"}, 
+                    {from: 3, to: 4, word: "t"}, 
+                    {from: 4, to: 5, word: "s"}, 
+                    {from: 5, to: 6, word: "y"},
+                    {from: 6, to: 7, word: "uh"}, 
+                    {from: 7, to: 8, word: "r"}, 
+                    {from: 8, to: 9, word: "n"}, 
+                    {from: 9, to: 10, word: "ey"}, 
+                    {from: 10, to: 11, word: "m"},
+                    {from: 11, to: 12, word: "sil"},
+                    {from: 11, to: 12, word: ""}
+                    ]
+                  };
+
+      var grammarNeighbors = {
+                  numStates: 13, 
+                  start: 0, 
+                  end: 12, 
+                  transitions: [
+                    {from: 0, to: 1, word: "sil"}, 
+                    {from: 1, to: 2, word: "w"}, 
+                    {from: 1, to: 2, word: "l"}, 
+                    {from: 1, to: 2, word: "y"}, 
+                    {from: 2, to: 3, word: "ah"}, 
+                    {from: 2, to: 3, word: "ae"}, 
+                    {from: 2, to: 3, word: "er"}, 
+                    {from: 2, to: 3, word: "aa"}, 
+                    {from: 3, to: 4, word: "t"}, 
+                    {from: 3, to: 4, word: "ch"}, 
+                    {from: 3, to: 4, word: "k"}, 
+                    {from: 3, to: 4, word: "d"}, 
+                    {from: 3, to: 4, word: "p"}, 
+                    {from: 3, to: 4, word: "hh"}, 
+                    {from: 4, to: 5, word: "s"}, 
+                    {from: 4, to: 5, word: "sh"}, 
+                    {from: 4, to: 5, word: "z"}, 
+                    {from: 4, to: 5, word: "th"}, 
+                    {from: 5, to: 6, word: "y"},
+                    {from: 5, to: 6, word: "w"},
+                    {from: 5, to: 6, word: "r"},
+                    {from: 6, to: 7, word: "uh"}, 
+                    {from: 6, to: 7, word: "ao"}, 
+                    {from: 6, to: 7, word: "uw"}, 
+                    {from: 7, to: 8, word: "r"}, 
+                    {from: 7, to: 8, word: "y"}, 
+                    {from: 7, to: 8, word: "l"}, 
+                    {from: 8, to: 9, word: "n"}, 
+                    {from: 8, to: 9, word: "m"}, 
+                    {from: 8, to: 9, word: "ng"}, 
+                    {from: 9, to: 10, word: "ey"}, 
+                    {from: 9, to: 10, word: "eh"}, 
+                    {from: 9, to: 10, word: "iy"}, 
+                    {from: 9, to: 10, word: "ay"}, 
+                    {from: 10, to: 11, word: "m"},
+                    {from: 10, to: 11, word: "n"},
+                    {from: 11, to: 12, word: "sil"},
+                    {from: 11, to: 12, word: ""}
+                    ]
+                  };
+
+      var grammars = [{title: "words", g: grammarWords}, {title: "align", g: grammarAlign}, {title: "neighbors", g: grammarNeighbors}];
+      var grammarIds = [];
+    </script>
+    <!-- These are the two JavaScript files you must load in the HTML,
+    The recognizer is loaded through a Web Worker -->
+    <script src="{{ url_for('static', filename='js/audioRecorder.js') }}" type="text/javascript"></script>
+    <script src="{{ url_for('static', filename='js/callbackManager.js') }}" type="text/javascript"></script>
+  </body>
+</html>
