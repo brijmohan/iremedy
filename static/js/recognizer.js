@@ -279,6 +279,7 @@ function stop() {
 }
 
 function process(array) {
+
     if (recognizer) {
 		while (buffer.size() < array.length)
 		    buffer.push_back(0);

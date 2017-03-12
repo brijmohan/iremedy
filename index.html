@@ -5,48 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Pronunciation Intelligibility Remediation</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-    <link href="static/css/cover.css" rel="stylesheet">
+    <link href="static/css/jumbotron.css" rel="stylesheet">
+    <style type="text/css">
+      .jumbotron {
+        background-color: #cacfd2;
+      }
+    </style>
   </head>
   <body>
 
-  <div class="site-wrapper">
+  <nav class="navbar navbar-toggleable-md navbar-inverse fixed-top bg-inverse">
+    <a class="navbar-brand" href="#">Pronunciation Intelligibility Remediation</a>
+  </nav>
 
-      <div class="site-wrapper-inner">
-
-        <div class="cover-container">
-
-          <div class="masthead clearfix">
-            <div class="inner">
-              <h3 class="masthead-brand">Pronunciation Intelligibility Remediation</h3>
-            </div>
-          </div>
-
-          <div class="inner cover">
+  <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <div class="container">
+        <h3 class="display-5">Press "Start" and speak</h3>
             
-            <ul>
-              <li>Press "Start" and speak</li>
-            </ul>
-            <div style="float: right;">
-              <h2>Status <img id="load_symbol" href="static/img/ajax-loader.gif"></h2>
-              <div id="current-status">Loading page</div>
-            </div>
             <select id="grammars"></select>
             <button id="startBtn">Start</button>
             <button id="stopBtn">Stop</button>
             <span id="recording-indicator" style="border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; width: 20px; height: 20px; background: red;"></span>
             <h2>Recognition Output</h2>
+            <div id="waveform"></div>
             <div id="output" >
             </div>
-          
-          </div>
-
-          
-
-        </div>
 
       </div>
-
     </div>
+
+    <div class="container">
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="col-md-4">
+          <h2>Status <img id="load_symbol" src="static/img/ajax-loader.gif"></h2>
+          <div id="current-status">Loading page</div>
+        </div>
+        <!--<div class="col-md-4">
+          <h2>Heading</h2>
+          <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+          <p><a class="btn btn-secondary" href="#" role="button">View details &raquo;</a></p>
+       </div>
+        <div class="col-md-4">
+          <h2>Heading</h2>
+          <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
+          <p><a class="btn btn-secondary" href="#" role="button">View details &raquo;</a></p>
+        </div>-->
+      </div>
+
+      <hr>
+
+      <!--
+      <footer>
+        <p>&copy; Company 2017</p>
+      </footer>
+    </div> --> <!-- /container -->
 
     
 
@@ -131,6 +145,7 @@
            isRecognizerReady = true;
            updateUI();
            updateStatus("Recognizer ready");
+           $('#load_symbol').hide();
       };
 
       // We get the grammars defined below and fill in the input select tag
@@ -140,6 +155,9 @@
             var newElt = document.createElement('option');
             newElt.value=grammarIds[i].id;
             newElt.innerHTML = grammarIds[i].title;
+            if (grammarIds[i].title == "align") {
+              newElt.selected = "selected";
+            }
             selectTag.appendChild(newElt);
         }                          
       };
@@ -203,7 +221,7 @@
                     var hypseg = e.data.hypseg;
                     var cnt = 0;
                     for (var i = 0; i < hypseg.length; i++) {
-                      if (hypseg[i].word != "sil") {
+                      if (valid_words.indexOf(hypseg[i].word) != -1) {
                         cnt++;
                         mean += hypseg[i].ascr;
                       }
@@ -214,7 +232,7 @@
                     cnt = 0;
                     var std = 0;
                     for (var i = 0; i < hypseg.length; i++) {
-                      if (hypseg[i].word != "sil") {
+                      if (valid_words.indexOf(hypseg[i].word) != -1) {
                         cnt++;
                         var diff = (hypseg[i].ascr - mean)
                         std += (diff * diff);
@@ -227,17 +245,29 @@
                     console.log("Mean = " + mean);
                     console.log("Std = " + std);
 
-                    var table_str = "<table border='1'><tr><td>Word</td><td>Normalized score</td><td>Duration</td></tr>";
+                    var mean_var_str = "<p> Mean : " + mean.toFixed(2) + "<br> Std. deviation : " + std.toFixed(2) + "</p>"
+
+                    //var table_str = "<table border='1'><tr><td>Word</td><td>Normalized score</td><td>Duration</td></tr>";
+                    var table_str = "<table class='table table-bordered'>";
+                    var tr1 = "<tr><th>Word</th>";
+                    var tr2 = "<tr><th>Normalized score</th>";
+                    var tr3 = "<tr><th>Duration</th>";
                     for (var i = 0; i < hypseg.length; i++) {
-                      if (hypseg[i].word != "sil") {
+                      if (valid_words.indexOf(hypseg[i].word) != -1) {
                         var score = (hypseg[i].ascr - mean) / std;
-                        table_str += "<tr><td>" + hypseg[i].word + "</td><td>" + score + "</td><td>" + ((hypseg[i].end - hypseg[i].start)/100.0) + "</td></tr>";
+                        //table_str += "<tr><td>" + hypseg[i].word + "</td><td>" + score + "</td><td>" + ((hypseg[i].end - hypseg[i].start)/100.0) + "</td></tr>";
+                        tr1 += "<td>" + hypseg[i].word + "</td>";
+                        tr2 += "<td>" + score.toFixed(2) + "</td>";
+                        tr3 += "<td>" + ((hypseg[i].end - hypseg[i].start)/100.0) + "</td>";
                         console.log("Word = " + hypseg[i].word + " : Score = " + score + " : Duration = " + (hypseg[i].end - hypseg[i].start)/100.0);
                       }
                     }
+                    table_str += (tr1 + "</tr>");
+                    table_str += (tr2 + "</tr>");
+                    table_str += (tr3 + "</tr>");
                     table_str += "</table>";
 
-                    updateHyp(newHyp + "<br>" + table_str + "<br>");
+                    updateHyp(newHyp + "<br><br>" + mean_var_str + table_str + "<br>");
 
                   } else {
                     updateHyp(newHyp);
@@ -314,6 +344,11 @@
                   ["ay", "AY"]
                   ];
       
+      var valid_words = []
+      for (var w = 0; w < wordList.length; w++) {
+        valid_words.push(wordList[w][0]);
+      }
+
       var grammarWords = {
                   numStates: 6, 
                   start: 0, 
@@ -395,7 +430,7 @@
                     ]
                   };
 
-      var grammars = [{title: "words", g: grammarWords}, {title: "align", g: grammarAlign}, {title: "neighbors", g: grammarNeighbors}];
+      var grammars = [{title: "align", g: grammarAlign}, {title: "words", g: grammarWords}, {title: "neighbors", g: grammarNeighbors}];
       var grammarIds = [];
     </script>
     <!-- These are the two JavaScript files you must load in the HTML,
@@ -405,6 +440,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
     
+    <script type="text/javascript" src="static/js/wavesurfer.min.js"></script>
     <script src="static/js/audioRecorder.js" type="text/javascript"></script>
     <script src="static/js/callbackManager.js" type="text/javascript"></script>
   </body>
