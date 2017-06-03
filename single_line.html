@@ -19,6 +19,7 @@
 		}
 		.material-icons {
 			vertical-align: middle;
+			cursor: pointer;
 		}
 	</style>
 </head>
@@ -36,7 +37,7 @@
 				  Your browser does not support the <code>audio</code> element.
 				</audio>
 			</td>
-			<td>Try saying: [Record <i class="material-icons">fiber_manual_record</i>] [Stop <i class="material-icons">stop</i>] [Play <i class="material-icons">play_arrow</i>] [Evaluate <i class="material-icons">equalizer</i>] [Say in phrase <i class="material-icons">insert_link</i>]</td>
+			<td>Try saying: [Record <i class="material-icons btn-rec">fiber_manual_record</i>] [Stop <i class="material-icons btn-stop">stop</i>] [Play <i class="material-icons btn-play">play_arrow</i>] [Evaluate <i class="material-icons btn-eq">equalizer</i>] [Say in phrase <i class="material-icons btn-say">insert_link</i>]</td>
 		</tr>
 		</tbody>
 	</table>
@@ -52,7 +53,7 @@
 				  Your browser does not support the <code>audio</code> element.
 				</audio>
 			</td>
-			<td>Try saying: [Record <i class="material-icons">fiber_manual_record</i>] [Stop <i class="material-icons">stop</i>] [Play <i class="material-icons">play_arrow</i>] [Evaluate <i class="material-icons">equalizer</i>] [Say in phrase <i class="material-icons">insert_link</i>]</td>
+			<td>Try saying: [Record <i class="material-icons btn-rec">fiber_manual_record</i>] [Stop <i class="material-icons btn-stop">stop</i>] [Play <i class="material-icons btn-play">play_arrow</i>] [Evaluate <i class="material-icons btn-eq">equalizer</i>] [Say in phrase <i class="material-icons btn-say">insert_link</i>]</td>
 		</tr>
 		</tbody>
 	</table>
@@ -68,7 +69,7 @@
 				  Your browser does not support the <code>audio</code> element.
 				</audio>
 			</td>
-			<td>Try saying: [Record <i class="material-icons">fiber_manual_record</i>] [Stop <i class="material-icons">stop</i>] [Play <i class="material-icons">play_arrow</i>] [Evaluate <i class="material-icons">equalizer</i>] [Say in phrase <i class="material-icons">insert_link</i>]</td>
+			<td>Try saying: [Record <i class="material-icons btn-rec">fiber_manual_record</i>] [Stop <i class="material-icons btn-stop">stop</i>] [Play <i class="material-icons btn-play">play_arrow</i>] [Evaluate <i class="material-icons btn-eq">equalizer</i>] [Say in phrase <i class="material-icons btn-say">insert_link</i>]</td>
 		</tr>
 		</tbody>
 	</table>
@@ -77,6 +78,28 @@
 </ul>
 
 </body>
+
+<!-- JAVASCRIPT -->
+<script type="text/javascript" src="static/js/jquery-3.2.1.min.js"></script>
+<script type="text/javascript">
+$(function() {
+	$('.audiotable').on('click', 'i.btn-rec', function(evt) {
+		alert('Started recording...')
+	});
+	$('.audiotable').on('click', 'i.btn-stop', function(evt) {
+		alert('Stopped recording...')
+	});
+	$('.audiotable').on('click', 'i.btn-play', function(evt) {
+		alert('Started playing...')
+	});
+	$('.audiotable').on('click', 'i.btn-eq', function(evt) {
+		alert('Started evaluating...')
+	});
+	$('.audiotable').on('click', 'i.btn-say', function(evt) {
+		alert('Start saying...')
+	});
+});
+</script>
 </html>
 
 
