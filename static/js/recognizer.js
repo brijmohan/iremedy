@@ -1,13 +1,14 @@
 var Module;
 if (typeof Module === 'undefined') Module = eval('(function() { try { return Module || {} } catch(e) { return {} } })()');
 
-/**
-*
-* We can not interact with emscripten using unicide strings
-* so we need to manually encode and decode them.
-* Thanks to:
-* https://gist.github.com/chrisveness/bcb00eb717e6382c5608
-*
+/*
+function Utf8Encode(strUni) {
+    return strUni;
+}
+
+function Utf8Decode(strUtf) {
+    return strUtf;
+}
 */
 
 function Utf8Encode(strUni) {
@@ -43,9 +44,10 @@ function Utf8Decode(strUtf) {
     return strUni;
 }
 
+
 function startup(onMessage) {
     self.onmessage = function(event) {
-	var pocketsphinxJS = (event.data && event.data.length && (event.data.length > 0)) ? event.data : 'pocketsphinx.js';
+	var pocketsphinxJS = (event.data && event.data.length && (event.data.length > 0)) ? event.data : '/static/js/pocketsphinx.js';
 	importScripts(pocketsphinxJS);
 	self.onmessage = onMessage;
 	self.postMessage({});
@@ -54,39 +56,48 @@ function startup(onMessage) {
 
 startup(function(event) {
     switch(event.data.command){
-    case 'initialize':
-	initialize(event.data.data, event.data.callbackId);
-	break;
-    case 'load':
-	load(event.data.data, event.data.callbackId);
-	break;
-    case 'lazyLoad':
-	lazyLoad(event.data.data, event.data.callbackId);
-	break;
-    case 'addWords':
-	addWords(event.data.data, event.data.callbackId);
-	break;
-    case 'addGrammar':
-	addGrammar(event.data.data, event.data.callbackId);
-	break;
-    case 'lookupWord':
-	lookupWord(event.data.data, event.data.callbackId);
-	break;
-    case 'lookupWords':
-	lookupWords(event.data.data, event.data.callbackId);
-	break;
-    case 'addKeyword':
-	addKeyword(event.data.data, event.data.callbackId);
-	break;
-    case 'start':
-	start(event.data.data);
-	break;
-    case 'stop':
-	stop();
-	break;
-    case 'process':
-	process(event.data.data);
-	break;
+	    case 'initialize':
+			initialize(event.data.data, event.data.callbackId);
+		break;
+	    case 'load':
+			load(event.data.data, event.data.callbackId);
+		break;
+	    case 'lazyLoad':
+			lazyLoad(event.data.data, event.data.callbackId);
+		break;
+	    case 'addWords':
+			addWords(event.data.data, event.data.callbackId);
+		break;
+	    case 'addGrammar':
+			addGrammar(event.data.data, event.data.callbackId);
+		break;
+	    case 'lookupWord':
+			lookupWord(event.data.data, event.data.callbackId);
+		break;
+	    case 'lookupWords':
+			lookupWords(event.data.data, event.data.callbackId);
+		break;
+	    case 'addKeyword':
+			addKeyword(event.data.data, event.data.callbackId);
+		break;
+	    case 'start':
+			start(event.data.data);
+		break;
+	    case 'stop':
+			stop(event.data.data);
+		break;
+	    case 'process':
+			process(event.data.data);
+		break;
+		case 'wordalign':
+			wordalign(event.data.data);
+		break;
+		case 'stopwordalign':
+			stopwordalign(event.data.data);
+		break;
+		case 'testprint':
+			testprint();
+		break;
     }
 });
 
@@ -110,6 +121,12 @@ function segToArray(segmentation) {
 		 		});
     return output;
 };
+
+function testprint(){
+	if (recognizer) {
+		recognizer.testprint();
+	}
+}
 
 
 function initialize(data, clbId) {
@@ -262,16 +279,22 @@ function start(id) {
     }
 }
 
-function stop() {
+function stop(data) {
     if (recognizer) {
 		var output = recognizer.stop();
 		if (output != Module.ReturnType.SUCCESS)
 		    post({status: "error", command: "stop", code: output});
 		else {
 		    recognizer.getHypseg(segmentation);
-		    post({hyp: Utf8Decode(recognizer.getHyp()),
-			  hypseg: segToArray(segmentation),
-			  final: true});
+		    var return_obj = {
+		    	hyp: Utf8Decode(recognizer.getHyp()),
+			  	hypseg: segToArray(segmentation),
+			  	final: true
+		    }
+		    if(data) {
+		    	return_obj['data'] = data;
+		    }
+		    post(return_obj);
 		}
     } else {
 		post({status: "error", command: "stop", code: "js-no-recognizer"});
@@ -289,7 +312,7 @@ function process(array) {
 		if (output != Module.ReturnType.SUCCESS)
 		    post({status: "error", command: "process", code: output});
 		else {
-			    recognizer.getHypseg(segmentation);
+			    recognizer.getWordAlignSeg(segmentation);
 			    post({hyp: Utf8Decode(recognizer.getHyp()),
 				  hypseg: segToArray(segmentation)});
 		    }
@@ -297,3 +320,43 @@ function process(array) {
 		post({status: "error", command: "process", code: "js-no-recognizer"});
     }
 }
+
+function wordalign(data) {
+
+    if (recognizer) {
+    	var array = data.array;
+    	var word = Utf8Encode(data.word);
+
+    	console.log(array, word);
+		while (buffer.size() < array.length)
+		    buffer.push_back(0);
+		for (var i = 0 ; i < array.length ; i++)
+		    buffer.set(i, array[i]);
+		var output = recognizer.wordAlign(buffer, word);
+		if (output != Module.ReturnType.SUCCESS)
+		    post({status: "error", command: "wordalign", code: output});
+		else {
+			    recognizer.getWordAlignSeg(segmentation);
+			    post({hypseg: segToArray(segmentation)});
+		    }
+    } else {
+		post({status: "error", command: "process", code: "js-no-recognizer"});
+    }
+}
+
+function stopwordalign(data) {
+    if (recognizer) {
+	    recognizer.getWordAlignSeg(segmentation);
+	    var return_obj = {
+		  	hypseg: segToArray(segmentation),
+		  	final: true
+	    }
+	    if(data) {
+	    	return_obj['data'] = data;
+	    }
+	    post(return_obj);
+    } else {
+		post({status: "error", command: "stop", code: "js-no-recognizer"});
+    }
+}
+
