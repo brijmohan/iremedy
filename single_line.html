@@ -38,7 +38,8 @@
 			</td>
 			<td>Try saying: 
 				<button type="button" class="btn btn-default btn-rec">Record <i class="material-icons">fiber_manual_record</i></button>
-				<button type="button" class="btn btn-default btn-stop">Stop <i class="material-icons">stop</i></button>
+				<canvas class="meter" height="35px" width="25px"></canvas>
+				<button type="button" data-word="because" class="btn btn-default btn-stop">Stop <i class="material-icons">stop</i></button>
 				<button type="button" class="btn btn-default btn-play">Play <i class="material-icons">play_arrow</i></button>
 				<button type="button" class="btn btn-default btn-eq">Evaluate <i class="material-icons">equalizer</i></button>
 				<button type="button" class="btn btn-default btn-say">Say in phrase <i class="material-icons">insert_link</i></button>
@@ -60,7 +61,8 @@
 			</td>
 			<td>Try saying: 
 				<button type="button" class="btn btn-default btn-rec">Record <i class="material-icons">fiber_manual_record</i></button>
-				<button type="button" class="btn btn-default btn-stop">Stop <i class="material-icons">stop</i></button>
+				<canvas class="meter" height="35px" width="25px"></canvas>
+				<button type="button" data-word="because" class="btn btn-default btn-stop">Stop <i class="material-icons">stop</i></button>
 				<button type="button" class="btn btn-default btn-play">Play <i class="material-icons">play_arrow</i></button>
 				<button type="button" class="btn btn-default btn-eq">Evaluate <i class="material-icons">equalizer</i></button>
 				<button type="button" class="btn btn-default btn-say">Say in phrase <i class="material-icons">insert_link</i></button>
@@ -82,7 +84,8 @@
 			</td>
 			<td>Try saying: 
 				<button type="button" class="btn btn-default btn-rec">Record <i class="material-icons">fiber_manual_record</i></button>
-				<button type="button" class="btn btn-default btn-stop">Stop <i class="material-icons">stop</i></button>
+				<canvas class="meter" height="35px" width="25px"></canvas>
+				<button type="button" data-word="because" class="btn btn-default btn-stop">Stop <i class="material-icons">stop</i></button>
 				<button type="button" class="btn btn-default btn-play">Play <i class="material-icons">play_arrow</i></button>
 				<button type="button" class="btn btn-default btn-eq">Evaluate <i class="material-icons">equalizer</i></button>
 				<button type="button" class="btn btn-default btn-say">Say in phrase <i class="material-icons">insert_link</i></button>
@@ -98,25 +101,7 @@
 
 <!-- JAVASCRIPT -->
 <script type="text/javascript" src="static/js/jquery-3.2.1.min.js"></script>
-<script type="text/javascript">
-$(function() {
-	$('.audiotable').on('click', 'button.btn-rec', function(evt) {
-		alert('Started recording...');
-	});
-	$('.audiotable').on('click', 'button.btn-stop', function(evt) {
-		alert('Stopped recording...');
-	});
-	$('.audiotable').on('click', 'button.btn-play', function(evt) {
-		alert('Started playing...');
-	});
-	$('.audiotable').on('click', 'button.btn-eq', function(evt) {
-		alert('Started evaluating...');
-	});
-	$('.audiotable').on('click', 'button.btn-say', function(evt) {
-		alert('Start saying...');
-	});
-});
-</script>
+<script type="text/javascript" src="static/js/common.js"></script>
 </html>
 
 
