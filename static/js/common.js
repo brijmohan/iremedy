@@ -19,10 +19,10 @@ function getScripts(scripts, callback) {
     });
 }
 
-dependencies = ['/static/js/recorder.js',
-                '/static/js/callbackmanager.js',
-                '/static/js/volumemeter.js',
-                '/static/js/constants.js']
+dependencies = ['static/js/recorder.js',
+                'static/js/callbackmanager.js',
+                'static/js/volumemeter.js',
+                'static/js/constants.js']
 
 getScripts(dependencies, function() { 
     
