@@ -47,7 +47,7 @@ function Utf8Decode(strUtf) {
 
 function startup(onMessage) {
     self.onmessage = function(event) {
-	var pocketsphinxJS = (event.data && event.data.length && (event.data.length > 0)) ? event.data : '/static/js/pocketsphinx.js';
+	var pocketsphinxJS = (event.data && event.data.length && (event.data.length > 0)) ? event.data : 'static/js/pocketsphinx.js';
 	importScripts(pocketsphinxJS);
 	self.onmessage = onMessage;
 	self.postMessage({});
