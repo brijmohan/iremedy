@@ -87,7 +87,7 @@ getScripts(dependencies, function() {
     
     $(document).ready( function() {
       callbackManager = new CallbackManager();
-      spawnWorker("/static/js/recognizer.js", function(worker) {
+      spawnWorker("static/js/recognizer.js", function(worker) {
               // This is the onmessage function, once the worker is fully loaded
               worker.onmessage = function(e) {
 
