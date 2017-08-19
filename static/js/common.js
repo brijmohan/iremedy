@@ -90,6 +90,12 @@ getScripts(dependencies, function() {
       spawnWorker("/static/js/recognizer.js", function(worker) {
               // This is the onmessage function, once the worker is fully loaded
               worker.onmessage = function(e) {
+
+                  // This is the case when we got new feats from featex library
+                  if (e.data.hasOwnProperty('feats')) {
+                    console.log("feats", e.data);
+                  }
+                  
                   // This is the case when we have a callback id to be called
                   if (e.data.hasOwnProperty('id')) {
                     var clb = callbackManager.get(e.data['id']);
@@ -97,6 +103,7 @@ getScripts(dependencies, function() {
                     if ( e.data.hasOwnProperty('data')) data = e.data.data;
                     if(clb) clb(data);
                   }
+                  
                   // This is a case when the recognizer has a new hypothesis
                   if (e.data.hasOwnProperty('hypseg')) {
                     //var newHyp = e.data.hyp;
@@ -115,6 +122,7 @@ getScripts(dependencies, function() {
                     }
                     console.log(e.data);
                   }
+
                   // This is the case when we have an error
                   if (e.data.hasOwnProperty('status') && (e.data.status == "error")) {
                   }
@@ -156,8 +164,8 @@ getScripts(dependencies, function() {
         postRecognizerJob({command: 'lookupWord', data: decode_word},
               function(cbdata) {
                 console.log(cbdata);
-                postRecognizerJob({command: 'wordalign', data: {array: i16_buf, word: decode_word}});
-                postRecognizerJob({command: 'stopwordalign', data: {'stage': 0}});
+                postRecognizerJob({command: 'featex', data: {array: i16_buf, word: decode_word}});
+                //postRecognizerJob({command: 'stopwordalign', data: {'stage': 0}});
               });
               
               
@@ -506,7 +514,9 @@ getScripts(dependencies, function() {
             ["-beam", "1e-57"],
             ["-wbeam", "1e-56"],
             ["-maxhmmpf", "-1"],
-            ["-samprate", "16000"]
+            ["-samprate", "16000"],
+            ["-frate", "65"],
+            ["-fsgusefiller", "no"]
           ];
         postRecognizerJob({command: 'initialize', data: ps_config},
                             function() {

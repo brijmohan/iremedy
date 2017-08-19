@@ -98,6 +98,9 @@ startup(function(event) {
 		case 'testprint':
 			testprint();
 		break;
+		case 'featex':
+			featex(event.data.data);
+		break;
     }
 });
 
@@ -339,6 +342,36 @@ function wordalign(data) {
 			    recognizer.getWordAlignSeg(segmentation);
 			    post({hypseg: segToArray(segmentation)});
 		    }
+    } else {
+		post({status: "error", command: "process", code: "js-no-recognizer"});
+    }
+}
+
+function featex(data) {
+
+    if (recognizer) {
+    	var array = data.array;
+    	var word = Utf8Encode(data.word);
+
+    	console.log(array, word);
+		while (buffer.size() < array.length)
+		    buffer.push_back(0);
+		for (var i = 0 ; i < array.length ; i++)
+		    buffer.set(i, array[i]);
+		var feats = new Module.Feats();
+		var output = recognizer.pronFeatex(buffer, word, feats);
+		if (output != Module.ReturnType.SUCCESS)
+		    post({status: "error", command: "wordalign", code: output});
+		else {
+			console.log(feats.size());
+			var post_feats = [];
+			for (var i = 0 ; i < feats.size() ; i++) {
+				//console.log(feats.get(i));
+				post_feats.push(feats.get(i));
+			}
+			//console.log(post_feats);
+			post({'feats': post_feats});
+		}
     } else {
 		post({status: "error", command: "process", code: "js-no-recognizer"});
     }
