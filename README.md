@@ -1,6 +1,12 @@
 # iremedy
 
 Tested on Ubuntu 16.04 (Firefox and Chrome)
+
+## Live demo
+Check the URL: https://brijmohan.github.io/iremedy/single_line.html
+
+Open the javascript console and check the request for processing the audio samples into pronunciation features and then POST-ing these features to https://tools.wmflabs.org/proneval-gsoc17/ for intelligibility scores.
+
 ## Setup
 Install Python2, pip and virtualenv
 
