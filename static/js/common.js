@@ -94,6 +94,7 @@ getScripts(dependencies, function() {
                   // This is the case when we got new feats from featex library
                   if (e.data.hasOwnProperty('feats')) {
                     console.log("feats", e.data);
+                    get_intelligibility_score(e.data.feats, e.data.word);
                   }
                   
                   // This is the case when we have a callback id to be called
@@ -151,42 +152,30 @@ getScripts(dependencies, function() {
           console.log('No live audio input: ' + e);
         });
       });
+
+      function get_intelligibility_score(feats, word) {
+        var service_url = "https://tools.wmflabs.org/proneval-gsoc17/pronserv";
+        //var service_url = "http://localhost:5555/pronserv";
+        $.ajax({
+            url: service_url,
+            type: "POST",
+            data: JSON.stringify({feats: feats, word: word}),
+            contentType: "application/json; charset=utf-8",
+            success: function(dat) { console.log(dat); }
+        });
+      }
       
       function decode_buffer_align(decode_word, f32_arr) {
         //var i16_buf = new Int16Array(f32_arr.buffer);
         i16_buf = format_audio(f32_arr);
-        console.log(f32_arr);
-        console.log(i16_buf.length, i16_buf);
+        //console.log(f32_arr);
+        //console.log(i16_buf.length, i16_buf);
 
-        //postRecognizerJob({command: 'testprint'});
-        
-        
         postRecognizerJob({command: 'lookupWord', data: decode_word},
               function(cbdata) {
                 console.log(cbdata);
                 postRecognizerJob({command: 'featex', data: {array: i16_buf, word: decode_word}});
-                //postRecognizerJob({command: 'stopwordalign', data: {'stage': 0}});
-              });
-              
-              
-        
-        //postRecognizerJob({command: 'wordalign', data: {array: i16_buf, word: decode_word}});
-      //postRecognizerJob({command: 'stopwordalign', data: {'stage': 0}});
-        
-        //var align_gram = generateAlignGrammar(decode_word);
-        //console.log(align_gram);
-        
-        /*
-        postRecognizerJob({command: 'addGrammar', data: align_gram},
-                function(id) {
-                  //console.log(id, i16_buf);
-                  postRecognizerJob({command: 'start', data: id});
-                  postRecognizerJob({command: 'process', data: i16_buf});
-                  postRecognizerJob({command: 'stop', data: {'stage': 0}});
-                  //postRecognizerJob({command: 'stopwordalign', data: {'stage': 0}});
-                });
-                */
-            
+              });            
     }
     
     function process_stage_1(hyp_seg) {

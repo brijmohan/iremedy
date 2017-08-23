@@ -370,7 +370,7 @@ function featex(data) {
 				post_feats.push(feats.get(i));
 			}
 			//console.log(post_feats);
-			post({'feats': post_feats});
+			post({'feats': post_feats, 'word': word});
 		}
     } else {
 		post({status: "error", command: "process", code: "js-no-recognizer"});
