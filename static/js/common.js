@@ -61,9 +61,9 @@ getScripts(dependencies, function() {
       // Attach events
       $('.audiotable').on('click', 'button.btn-rec', function(evt) {
         //alert('Started recording...');
-        startRecording();
-                // grab our canvas
-                console.log(evt.target);
+          startRecording();
+          // grab our canvas
+          console.log(evt.target);
           canvasContext = $(evt.target).parents('td').find('.meter')[0].getContext("2d");
           drawLoop();
       });
@@ -93,7 +93,14 @@ getScripts(dependencies, function() {
 
                   // This is the case when we got new feats from featex library
                   if (e.data.hasOwnProperty('feats')) {
-                    console.log("feats", e.data);
+
+                    // For status update
+                    var ff = [];
+                    for (var ii = 0; ii < e.data.feats.length; ii++) {
+                      ff.push(e.data.feats[ii].toFixed(2) + "");
+                    }
+
+                    updateStatus("<code> feats ==> " + ff.toString() + " </code>");
                     get_intelligibility_score(e.data.feats, e.data.word);
                   }
                   
@@ -139,7 +146,7 @@ getScripts(dependencies, function() {
           window.URL = window.URL || window.webkitURL;
           
           audio_context = new AudioContext();
-          console.log('Audio context set up.');
+          updateStatus('Audio context set up.');
           console.log('navigator.getUserMedia ' + (navigator.getUserMedia ? 'available.' : 'not present!'));
 
           inSampleRate = audio_context.sampleRate;
@@ -149,7 +156,7 @@ getScripts(dependencies, function() {
         }
         
         navigator.getUserMedia({audio: true}, startUserMedia, function(e) {
-          console.log('No live audio input: ' + e);
+          updateStatus('No live audio input: ' + e);
         });
       });
 
@@ -161,7 +168,7 @@ getScripts(dependencies, function() {
             type: "POST",
             data: JSON.stringify({feats: feats, word: word}),
             contentType: "application/json; charset=utf-8",
-            success: function(dat) { console.log(dat); }
+            success: function(dat) { updateStatus("<code> Pronunciation intelligibility score ==> " + dat + "</code>"); }
         });
       }
       
@@ -307,17 +314,24 @@ getScripts(dependencies, function() {
       // This starts recording. We first need to get the id of the grammar to use
       var startRecording = function() {
         if (recorder) recorder.record();
+        clearStatus();
       };
   
     // Stops recording
     var stopRecording = function(evt) {
       recorder && recorder.stop();
         createDownloadLink(evt);
-        var decode_word = $(evt.target).parents('td').find('.btn-stop').data('word');
+        //var decode_word = $(evt.target).parents('td').find('.btn-stop').data('word');
+        var decode_word = $('#prompt_text').val();
         console.log("Decode==>", decode_word);
         recorder.getBuffer(function(buf){
           //console.log(buf);
-          decode_buffer_align(decode_word, buf[0]);
+          if (decode_word != ""){
+            decode_buffer_align(decode_word, buf[0]);
+          }
+          else {
+            updateStatus("There is no word to decode!");
+          }
         });
         recorder.clear();
     };
@@ -361,7 +375,9 @@ getScripts(dependencies, function() {
           
           au.controls = true;
           au.src = url;
-          $(evt.target).parents('td').find('span.recaudio').html(au);
+          //$(evt.target).parents('td.audiofile').find('span.recaudio').html(au);
+          console.log($(evt.target).parents('tr').find('td.audiofile'));
+          $(evt.target).parents('tr').find('td.audiofile').html(au);
         });
     }
   
@@ -385,7 +401,7 @@ getScripts(dependencies, function() {
         isRecorderReady = true;
         updateStatus("Audio recorder ready");
         //recorder = new Recorder(input);
-        console.log('Recorder initialised.');
+        updateStatus('Recorder initialised.');
         gotStream(stream);
       }
 
@@ -400,6 +416,12 @@ getScripts(dependencies, function() {
     // This is just a logging window where we display the status
     function updateStatus(newStatus) {
         console.log(newStatus);
+        var old_status = $('div#status').html();
+        $('div#status').html(old_status + '<br><br>' + newStatus);
+    }
+
+    function clearStatus() {
+      $('div#status').html("");
     }
   
     // This function initializes an instance of the recorder
@@ -491,7 +513,8 @@ getScripts(dependencies, function() {
             function() {
               //feedGrammar(PROREMEDY.GRAMMARS, 0);
               // TODO: INDICATE THAT RECOGNIZER IS USABLE NOW
-              console.log("Decoder must be ready now!!!");
+              //console.log("Decoder must be ready now!!!");
+              updateStatus("Decoder must be ready now!!!");
             });
     };
   

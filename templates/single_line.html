@@ -30,7 +30,7 @@
 	<table class="audiotable">
 		<tbody>
 		<tr>
-			<td class="unicode audiolink">Audio 1</td>
+			<td class="unicode audiolink"><input type="text" id="prompt_text" placeholder="Phrase to decode"></td>
 			<td class="audiofile">
 				<audio controls="controls" src="En-uk-to_read.ogg.ogx">
 				  Your browser does not support the <code>audio</code> element.
@@ -40,7 +40,7 @@
 				<button type="button" class="btn btn-default btn-rec">Record <i class="material-icons">fiber_manual_record</i></button>
 				<canvas class="meter" height="35px" width="25px"></canvas>
 				<button type="button" data-word="because" class="btn btn-default btn-stop">Stop <i class="material-icons">stop</i></button>
-				<button type="button" class="btn btn-default btn-play">Play <i class="material-icons">play_arrow</i></button>
+				<!--<button type="button" class="btn btn-default btn-play">Play <i class="material-icons">play_arrow</i></button>-->
 				<button type="button" class="btn btn-default btn-eq">Evaluate <i class="material-icons">equalizer</i></button>
 				<button type="button" class="btn btn-default btn-say">Say in phrase <i class="material-icons">insert_link</i></button>
 			</td>
@@ -49,53 +49,10 @@
 	</table>
 </li>
 
-<li>
-	<table class="audiotable">
-		<tbody>
-		<tr>
-			<td class="unicode audiolink">Audio 2</td>
-			<td class="audiofile">
-				<audio controls="controls" src="En-uk-to_read.ogg.ogx">
-				  Your browser does not support the <code>audio</code> element.
-				</audio>
-			</td>
-			<td>Try saying: 
-				<button type="button" class="btn btn-default btn-rec">Record <i class="material-icons">fiber_manual_record</i></button>
-				<canvas class="meter" height="35px" width="25px"></canvas>
-				<button type="button" data-word="because" class="btn btn-default btn-stop">Stop <i class="material-icons">stop</i></button>
-				<button type="button" class="btn btn-default btn-play">Play <i class="material-icons">play_arrow</i></button>
-				<button type="button" class="btn btn-default btn-eq">Evaluate <i class="material-icons">equalizer</i></button>
-				<button type="button" class="btn btn-default btn-say">Say in phrase <i class="material-icons">insert_link</i></button>
-			</td>
-		</tr>
-		</tbody>
-	</table>
-</li>
-
-<li>
-	<table class="audiotable">
-		<tbody>
-		<tr>
-			<td class="unicode audiolink">Audio 3</td>
-			<td class="audiofile">
-				<audio controls="controls" src="En-uk-to_read.ogg.ogx">
-				  Your browser does not support the <code>audio</code> element.
-				</audio>
-			</td>
-			<td>Try saying: 
-				<button type="button" class="btn btn-default btn-rec">Record <i class="material-icons">fiber_manual_record</i></button>
-				<canvas class="meter" height="35px" width="25px"></canvas>
-				<button type="button" data-word="because" class="btn btn-default btn-stop">Stop <i class="material-icons">stop</i></button>
-				<button type="button" class="btn btn-default btn-play">Play <i class="material-icons">play_arrow</i></button>
-				<button type="button" class="btn btn-default btn-eq">Evaluate <i class="material-icons">equalizer</i></button>
-				<button type="button" class="btn btn-default btn-say">Say in phrase <i class="material-icons">insert_link</i></button>
-			</td>
-		</tr>
-		</tbody>
-	</table>
-</li>
 
 </ul>
+
+<div id="status"></div>
 
 </body>
 
