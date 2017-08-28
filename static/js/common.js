@@ -61,11 +61,7 @@ getScripts(dependencies, function() {
       // Attach events
       $('.audiotable').on('click', 'button.btn-rec', function(evt) {
         //alert('Started recording...');
-          startRecording();
-          // grab our canvas
-          console.log(evt.target);
-          canvasContext = $(evt.target).parents('td').find('.meter')[0].getContext("2d");
-          drawLoop();
+          startRecording(evt.target);
       });
       $('.audiotable').on('click', 'button.btn-stop', function(evt) {
         //alert('Stopped recording...');
@@ -83,6 +79,8 @@ getScripts(dependencies, function() {
       $('.audiotable').on('click', 'button.btn-eq', function(evt) {
         renderQuickRCDialog();
       });
+
+      $("#prompt_text").tooltip({'container': 'body', 'title': 'Enter a phrase to decode!', 'placement': 'bottom'});
     });
     
     $(document).ready( function() {
@@ -163,6 +161,7 @@ getScripts(dependencies, function() {
       function get_intelligibility_score(feats, word) {
         var service_url = "https://tools.wmflabs.org/proneval-gsoc17/pronserv";
         //var service_url = "http://localhost:5555/pronserv";
+        updateStatus('Getting intelligibility score...');
         $.ajax({
             url: service_url,
             type: "POST",
@@ -181,6 +180,7 @@ getScripts(dependencies, function() {
         postRecognizerJob({command: 'lookupWord', data: decode_word},
               function(cbdata) {
                 console.log(cbdata);
+                updateStatus('Extracting features ...');
                 postRecognizerJob({command: 'featex', data: {array: i16_buf, word: decode_word}});
               });            
     }
@@ -312,9 +312,23 @@ getScripts(dependencies, function() {
     }
     
       // This starts recording. We first need to get the id of the grammar to use
-      var startRecording = function() {
-        if (recorder) recorder.record();
-        clearStatus();
+      var startRecording = function(targetEle) {
+        var decode_word = $.trim($('#prompt_text').val());
+        if (decode_word != ""){
+          $("#prompt_text").tooltip('hide');
+          console.log(decode_word);
+          if (recorder) recorder.record();
+          clearStatus();
+          // grab our canvas
+          console.log(targetEle);
+          canvasContext = $(targetEle).parents('td').find('.meter')[0].getContext("2d");
+          drawLoop();
+        }
+        else {
+          // raise tooltip
+          console.log("No decode word");
+          $("#prompt_text").tooltip('show');
+        }
       };
   
     // Stops recording

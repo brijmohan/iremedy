@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title></title>
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
 	<style type="text/css">
+
 		.audiotable {
 			vertical-align: middle;
 			display: inline-block;
@@ -23,41 +25,53 @@
 	</style>
 </head>
 <body>
+	<div class="container">
 
-<ul>
-
-<li>
-	<table class="audiotable">
-		<tbody>
-		<tr>
-			<td class="unicode audiolink"><input type="text" id="prompt_text" placeholder="Phrase to decode"></td>
-			<td class="audiofile">
-				<audio controls="controls" src="En-uk-to_read.ogg.ogx">
-				  Your browser does not support the <code>audio</code> element.
-				</audio>
-			</td>
-			<td>Try saying: 
-				<button type="button" class="btn btn-default btn-rec">Record <i class="material-icons">fiber_manual_record</i></button>
-				<canvas class="meter" height="35px" width="25px"></canvas>
-				<button type="button" data-word="because" class="btn btn-default btn-stop">Stop <i class="material-icons">stop</i></button>
-				<!--<button type="button" class="btn btn-default btn-play">Play <i class="material-icons">play_arrow</i></button>-->
-				<button type="button" class="btn btn-default btn-eq">Evaluate <i class="material-icons">equalizer</i></button>
-				<button type="button" class="btn btn-default btn-say">Say in phrase <i class="material-icons">insert_link</i></button>
-			</td>
-		</tr>
-		</tbody>
-	</table>
-</li>
+		<h1>Pronunciation intelligibility remediation using pocketsphinx.js: GSoC 2017 <small><a class="badge badge-primary" target="_blank" href="https://storage.googleapis.com/summerofcode-prod.appspot.com/gsoc/core_project/doc/6739097470107648_1490815263_PronunciationIntelligibilityRemediation-Proposal_v2.pdf?Expires=1504015253&GoogleAccessId=summerofcode-prod%40appspot.gserviceaccount.com&Signature=Uy6uTucJcjl%2Bqnq5WaxckNBYSZG2EU0lRHatpmNqcP4VqgZAnE2OEazQoM%2FNozua3Wu1D2gl7CbASfeTGvr39T32j3W95%2FYCdb%2Flsu8ilhq2j7sNCE%2FdcmvEB0ySBXJowh7oXK7bYo%2B0f54QxGP8htfNE4lCqFm56f4FtwCw5USjsbN9h%2F9I0GXQGv0oV2lNkf6vWGT1yeSKedAWiMU%2BpIETMh3e8EZzAm197zzlMw1YaN09Dk5joCW3etZ3iziUYGQ7vSLukqJky6DctC5eod647R0%2FK73vAEqYBJSIcWH1GQyCE1ChMGfiASY0GmOIiQ8M0IFZhVFp%2F4d%2FdZ3gmw%3D%3D">proposal</a> <a class="badge badge-success" target="_blank" href="http://pronunce.blogspot.in/">blog</a> <a class="badge badge-dark" target="_blank" href="https://github.com/brijmohan/iremedy/tree/gh-pages/">github</a></small></h1>
 
 
-</ul>
+		<ul>
 
-<div id="status"></div>
+		<li>
+			<table class="audiotable">
+				<tbody>
+				<tr>
+					<td class="unicode audiolink"><input type="text" id="prompt_text" placeholder="Phrase to decode"></td>
+					<td class="audiofile">
+						<audio controls="controls" src="En-uk-to_read.ogg.ogx">
+						  Your browser does not support the <code>audio</code> element.
+						</audio>
+					</td>
+					<td>Try saying: 
+						<button type="button" class="btn btn-primary btn-rec">Record <i class="material-icons">fiber_manual_record</i></button>
+						<canvas class="meter" height="35px" width="25px"></canvas>
+						<button type="button" data-word="because" class="btn btn-default btn-stop">Stop <i class="material-icons">stop</i></button>
+						<!--<button type="button" class="btn btn-default btn-play">Play <i class="material-icons">play_arrow</i></button>
+						<button type="button" class="btn btn-default btn-eq">Evaluate <i class="material-icons">equalizer</i></button>
+						<button type="button" class="btn btn-default btn-say">Say in phrase <i class="material-icons">insert_link</i></button>-->
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</li>
+
+
+		</ul>
+
+		<div id="status"></div>
+	</div>
 
 </body>
 
 <!-- JAVASCRIPT -->
 <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<script type="text/javascript">
+	$(function () {
+	  $('[data-toggle="tooltip"]').tooltip();
+	});
+</script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/common.js') }}"></script>
 </html>
 
