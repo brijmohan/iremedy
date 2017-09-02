@@ -98,7 +98,7 @@ getScripts(dependencies, function() {
                       ff.push(e.data.feats[ii].toFixed(2) + "");
                     }
 
-                    updateStatus("<code> feats ==> " + ff.toString() + " </code>");
+                    updateStatus("<code class='featcode'> feats ==> " + ff.toString() + " </code>");
                     get_intelligibility_score(e.data.feats, e.data.word);
                   }
                   
@@ -162,12 +162,22 @@ getScripts(dependencies, function() {
         var service_url = "https://tools.wmflabs.org/proneval-gsoc17/pronserv";
         //var service_url = "http://localhost:5555/pronserv";
         updateStatus('Getting intelligibility score...');
+        
+        // SENDING REQUEST TO SERVER
+        /*
         $.ajax({
             url: service_url,
             type: "POST",
             data: JSON.stringify({feats: feats, word: word}),
             contentType: "application/json; charset=utf-8",
             success: function(dat) { updateStatus("<code> Pronunciation intelligibility score ==> " + dat + "</code>"); }
+        });
+        */
+
+        // SENDING FEATS TO LOCAL KERAS.JS MODELS
+        get_local_prediction(feats, word).then(function(pred) {
+          console.log(pred);
+          updateStatus("<pre><code> " + JSON.stringify(pred, null, 4) + "</code></pre>");
         });
       }
       
