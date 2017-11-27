@@ -197,6 +197,7 @@
 	  $('[name="wtd"]').change(function(ele) {
 	    console.log(this.value);
 	    $("#prompt_text").val(this.value);
+	    $('.collapse').collapse('hide');
 	  });
 	});
 </script>
