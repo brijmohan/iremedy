@@ -185,7 +185,7 @@ getScripts(dependencies, function() {
         //var i16_buf = new Int16Array(f32_arr.buffer);
         i16_buf = format_audio(f32_arr);
         //console.log(f32_arr);
-        //console.log(i16_buf.length, i16_buf);
+        console.log(i16_buf.length, i16_buf);
 
         postRecognizerJob({command: 'lookupWord', data: decode_word},
               function(cbdata) {
@@ -361,7 +361,7 @@ getScripts(dependencies, function() {
     };
     
     function format_audio(inputArray){
-      // COnvert the float samples to 16-bit integers
+        // Convert the float samples to 16-bit integers
         var output = new Int16Array(inputArray.length);
         for (var i = 0; i < inputArray.length; i++){
             var s = Math.max(-1, Math.min(1, inputArray[i]));
@@ -377,17 +377,26 @@ getScripts(dependencies, function() {
         num = 0,
         indexIn = 0,
         indexOut = 0;
-      while(indexIn < outputBufferLength) {
+        while(indexIn < outputBufferLength) {
           bin = 0;
           num = 0;
           while(indexOut < Math.min(output.length, (indexIn + 1) * inSampleRate / outputSampleRate)) {
-          bin += output[indexOut];
-          num += 1;
-          indexOut++;
+              bin += output[indexOut];
+              num += 1;
+              indexOut++;
           }
           result[indexIn] = bin / num;
           indexIn++;
-      }
+        }
+        
+        // AGC
+        var max_val = -32768;
+        for (var idx = 0; idx < result.length; idx++) {
+            max_val = Math.abs(result[idx]) > max_val ? Math.abs(result[idx]) : max_val;
+        }
+        
+        var scale = Math.floor(32767 / max_val);
+        result = result.map(function(x) { return x * scale; });
         
         return result;
     }
