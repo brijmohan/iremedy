@@ -80,7 +80,7 @@ getScripts(dependencies, function() {
         renderQuickRCDialog();
       });
 
-      $("#prompt_text").tooltip({'container': 'body', 'title': 'Select a word to decode!', 'placement': 'bottom'});
+      $("#prompt_text").tooltip({'container': 'body', 'title': 'Enter a phrase or select a word to decode from step 1.', 'placement': 'bottom'});
     });
     
     $(document).ready( function() {
