@@ -396,6 +396,7 @@ getScripts(dependencies, function() {
         }
         
         var scale = Math.floor(32767 / max_val);
+        console.log("Max value : " + max_val + " ==> Scaling by factor: "+ scale);
         result = result.map(function(x) { return x * scale; });
         
         return result;
