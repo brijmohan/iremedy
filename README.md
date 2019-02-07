@@ -12,7 +12,7 @@ Install Python2, pip and virtualenv
 
 ```
 sudo apt install python2.7 python2.7-dev python-pip
-sudo pip install virualenv
+sudo pip install virtualenv
 ```
 
 Clone the repo

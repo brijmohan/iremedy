@@ -61,7 +61,9 @@ getScripts(dependencies, function() {
       // Attach events
       $('.audiotable').on('click', 'button.btn-rec', function(evt) {
         //alert('Started recording...');
-          startRecording(evt.target);
+	  audio_context.resume().then(() => {
+          	startRecording(evt.target);
+	  });
       });
       $('.audiotable').on('click', 'button.btn-stop', function(evt) {
         //alert('Stopped recording...');
