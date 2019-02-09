@@ -47,8 +47,8 @@ function Utf8Decode(strUtf) {
 
 function startup(onMessage) {
     self.onmessage = function(event) {
-		var pocketsphinxJS = (event.data && event.data.length && (event.data.length > 0)) ? event.data : 'pocketsphinx.js';
-		var pocketsphinxWASM = (event.data && 'pocketsphinx.wasm' in event.data) ? event.data['pocketsphinx.wasm'] : 'pocketsphinx.wasm';
+		var pocketsphinxJS = (event.data && event.data.length && (event.data.length > 0)) ? event.data : 'static/js/pocketsphinx.js';
+		var pocketsphinxWASM = (event.data && 'pocketsphinx.wasm' in event.data) ? event.data['pocketsphinx.wasm'] : 'static/js/pocketsphinx.wasm';
         // Case of compilation to WebAssembly, this is an absolute path
         Module['locateFile'] = function() {return pocketsphinxWASM;}
         Module['onRuntimeInitialized'] = function() {
